@@ -9,7 +9,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-
 import db.DBConnection;
 import entity.Item;
 import entity.Item.ItemBuilder;
@@ -41,16 +40,16 @@ public class MySQLConnection implements DBConnection {
 
 	@Override
 	public void setFavoriteItems(String userId, List<String> itemIds) {
-		if(connection == null) {
+		if (connection == null) {
 			System.err.println("DB Connection Failed!");
 			return;
 		}
-		
+
 		try {
 			String sql = "INSERT IGNORE history(user_id, item_id) VALUES(?, ?)";
 			PreparedStatement ps = connection.prepareStatement(sql);
 			ps.setString(1, userId);
-			for(String itemId : itemIds) {
+			for (String itemId : itemIds) {
 				ps.setString(2, itemId);
 				ps.execute();
 			}
@@ -61,16 +60,16 @@ public class MySQLConnection implements DBConnection {
 
 	@Override
 	public void unsetFavoriteItems(String userId, List<String> itemIds) {
-		if(connection == null) {
+		if (connection == null) {
 			System.err.println("DB Connection Failed!");
 			return;
 		}
-		
+
 		try {
 			String sql = "DELETE FROM history WHERE user_id = ? AND item_id = ?";
 			PreparedStatement ps = connection.prepareStatement(sql);
 			ps.setString(1, userId);
-			for(String itemId : itemIds) {
+			for (String itemId : itemIds) {
 				ps.setString(2, itemId);
 				ps.execute();
 			}
@@ -82,7 +81,7 @@ public class MySQLConnection implements DBConnection {
 
 	@Override
 	public Set<String> getFavoriteItemIds(String userId) {
-		if(connection == null) {
+		if (connection == null) {
 			return new HashSet<>();
 		}
 		Set<String> favoriteItemIds = new HashSet<>();
@@ -91,10 +90,10 @@ public class MySQLConnection implements DBConnection {
 			PreparedStatement ps = connection.prepareStatement(sql);
 			ps.setString(1, userId);
 			ResultSet rs = ps.executeQuery();
-			while(rs.next()) {
+			while (rs.next()) {
 				favoriteItemIds.add(rs.getString("item_id"));
 			}
-		}catch(SQLException e) {
+		} catch (SQLException e) {
 			e.printStackTrace();
 		}
 		return favoriteItemIds;
@@ -102,7 +101,7 @@ public class MySQLConnection implements DBConnection {
 
 	@Override
 	public Set<Item> getFavoriteItems(String userId) {
-		if(connection == null) {
+		if (connection == null) {
 			return new HashSet<>();
 		}
 		Set<String> itemIds = getFavoriteItemIds(userId);
@@ -110,12 +109,12 @@ public class MySQLConnection implements DBConnection {
 		try {
 			String sql = "SELECT * FROM items WHERE item_id = ?";
 			PreparedStatement ps = connection.prepareStatement(sql);
-			for(String itemId : itemIds) {	
+			for (String itemId : itemIds) {
 				ps.setString(1, itemId);
 				ResultSet rs = ps.executeQuery();
 				ItemBuilder builder = new ItemBuilder();
-				
-				while(rs.next()) {
+
+				while (rs.next()) {
 					builder.setItemId(rs.getString("item_id"));
 					builder.setAddress(rs.getString("address"));
 					builder.setName(rs.getString("name"));
@@ -124,11 +123,11 @@ public class MySQLConnection implements DBConnection {
 					builder.setDistance(rs.getDouble("distance"));
 					builder.setRating(rs.getDouble("rating"));
 					builder.setCategories(getCategories(itemId));
-					
+
 					favoriteItems.add(builder.build());
 				}
 			}
-		} catch(SQLException e) {
+		} catch (SQLException e) {
 			e.printStackTrace();
 		}
 		return favoriteItems;
@@ -136,7 +135,7 @@ public class MySQLConnection implements DBConnection {
 
 	@Override
 	public Set<String> getCategories(String itemId) {
-		if(connection == null) {
+		if (connection == null) {
 			return new HashSet<>();
 		}
 		Set<String> categories = new HashSet<>();
@@ -145,10 +144,10 @@ public class MySQLConnection implements DBConnection {
 			PreparedStatement ps = connection.prepareStatement(sql);
 			ps.setString(1, itemId);
 			ResultSet rs = ps.executeQuery();
-			while(rs.next()) {
+			while (rs.next()) {
 				categories.add(rs.getString("category"));
 			}
-		} catch(SQLException e) {
+		} catch (SQLException e) {
 			e.printStackTrace();
 		}
 		return categories;
@@ -201,14 +200,52 @@ public class MySQLConnection implements DBConnection {
 
 	@Override
 	public String getFullname(String userId) {
-		// TODO Auto-generated method stub
-		return null;
+		if (connection == null) {
+			return "";
+		}
+
+		String name = "";
+
+		try {
+			String sql = "SELECT first_name, last_name FROM users WHERE user_id = ?";
+			PreparedStatement stmt = connection.prepareStatement(sql);
+			stmt.setString(1, userId);
+			ResultSet rs = stmt.executeQuery();
+
+			while (rs.next()) {
+				name = String.join(" ", rs.getString("first_name"), rs.getString("last_name"));
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+
+		return name;
+
 	}
 
 	@Override
 	public boolean verifyLogin(String userId, String password) {
-		// TODO Auto-generated method stub
+		if (connection == null) {
+			return false;
+		}
+
+		try {
+			String sql = "SELECT user_id FROM users WHERE user_id = ? AND password = ?";
+			PreparedStatement stmt = connection.prepareStatement(sql);
+			stmt.setString(1, userId);
+			stmt.setString(2, password);
+			ResultSet rs = stmt.executeQuery();
+
+			while (rs.next()) {
+				return true;
+			}
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+
 		return false;
+
 	}
 
 }
