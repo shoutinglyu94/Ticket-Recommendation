@@ -2,7 +2,9 @@
 
 ## The project aims to use personalization to improve ticket search and recommendation 
 
-### Created Java servlets with RESTful APIs to handle HTTP requests and responses
-### Built relational and NoSQL databases (MySQL, MongoDB) to capture event data (name, description, location, parking info)  from TicketMaster API
-### Designed algorithms (e.g., content-based recommendation) to improve event recommendation based on search history and favorite records) 
-### Deployed server to Amazon EC2 to handle 150 queries per second tested by Apache JMeter
+### Implemented an interactive web page (HTML/javascript) for users to search events, update preference and view recommended events
+### Developed a web service using (Java servlet, REST API) to fetch event data from TicketMaster API
+### Utilized MySQL/MongoDB to store user preference and event information
+### Designed a content-based recommendation algorithm to match similar events based on categories 
+      Improved precision of recommendation by ordering events based on distance, stars and matched categories
+### Deployed server to Amazon EC2 and tested the webservice and app with unit tests (JUnit) and load tests(JMeter) 
